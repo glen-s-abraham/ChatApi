@@ -6,9 +6,11 @@ use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
-
+use App\Traits\UserStatusTraits;
 class UserController extends Controller
 {
+    use UserStatusTraits;
+
     public function register(Request $request)
     {
         $request->validate([
@@ -44,6 +46,8 @@ class UserController extends Controller
 
                 $token=$user->createToken('auth_token')->plainTextToken;
 
+                $this->setStatusToOnline($user->id);
+
                 return response()->json([
                 "status"=>1,
                 "message"=>"User Logged in",
@@ -69,7 +73,7 @@ class UserController extends Controller
     public function logout(Request $request)
     {
         auth()->user()->tokens()->delete();
-
+        $this->setStatusToOffline(auth()->user()->id);
         return response()->json([
             "status"=>1,
             "message"=>"logged out"

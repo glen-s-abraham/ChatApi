@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateMessagesTable extends Migration
+class CreateBroadcastChannelsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,22 +13,16 @@ class CreateMessagesTable extends Migration
      */
     public function up()
     {
-        Schema::create('messages', function (Blueprint $table) {
+        Schema::create('broadcast_channels', function (Blueprint $table) {
             $table->id();
 
-            $table->unsignedBigInteger('from_user_id');
-            $table->foreign('from_user_id')
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')
                   ->references('id')
                   ->on('users')
                   ->onDelete('cascade');
-
-            $table->unsignedBigInteger('to_user_id');
-            $table->foreign('to_user_id')
-                  ->references('id')
-                  ->on('users')
-                  ->onDelete('cascade');
-
-            $table->string('mesages');            
+                  
+            $table->string('channel_name');      
 
             $table->timestamps();
         });
@@ -41,6 +35,6 @@ class CreateMessagesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('messages');
+        Schema::dropIfExists('broadcast_channels');
     }
 }

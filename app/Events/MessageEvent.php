@@ -36,13 +36,12 @@ class MessageEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        //$channelName=$this->$fromUser;
-        //error_log("channelfrom".$this->fromUser."to".$this->toUser);
+        
         return ["messageChannel"];
     }
 
     public function broadcastAs()
     {
-        return '2';
+        return 'messageEvent';
     }
 }
