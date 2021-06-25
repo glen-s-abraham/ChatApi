@@ -26,6 +26,14 @@ trait UserStatusTraits{
 		UserStatus::create(['user_id'=>$userId,'online'=>false]);
 	}
 
+	public function isUserStatusPresent($userId)
+	{
+		return UserStatus::where('user_id',$userId)
+                                         ->count();
+	}
+
+	
+
 	public function isUserOnline($userId)
 	{
 		return UserStatus::where('user_id',$userId)->firstOrFail()->online;

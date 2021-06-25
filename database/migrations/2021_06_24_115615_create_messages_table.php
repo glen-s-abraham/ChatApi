@@ -28,7 +28,7 @@ class CreateMessagesTable extends Migration
                   ->on('users')
                   ->onDelete('cascade');
 
-            $table->string('mesages');            
+            $table->string('message');            
 
             $table->timestamps();
         });

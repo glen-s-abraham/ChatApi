@@ -17,9 +17,9 @@ Route::post('user/register','User\UserController@register');
 Route::post('user/login','User\UserController@login');
 
 Route::group(['middleware'=>['auth:sanctum']],function(){
-    Route::post('chat/message','Chat\ChatController@message');
+    Route::post('chat/message','Chat\ChatController@sendMessage');
     Route::get('chat/broadcast-channel/my','Chat\ChatController@getMyBroadcastChannel');
     Route::get('user/profile','User\UserController@profile');
     Route::get('user/logout','User\UserController@logout');
-    
+
 });
