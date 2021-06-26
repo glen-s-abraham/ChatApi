@@ -18,7 +18,12 @@ Route::post('user/login','User\UserController@login');
 
 Route::group(['middleware'=>['auth:sanctum']],function(){
     Route::post('chat/message','Chat\ChatController@sendMessage');
+    Route::get('chat/message/{userId}/get','Chat\ChatController@getConversation');
+    Route::get('chat/message/unread/count','Chat\ChatController@getUnreadMessageCount');
+    Route::put('chat/message/{messageId}/markAsRead','Chat\ChatController@markAsRead');
+    Route::put('chat/message/{userId}/markAllAsRead','Chat\ChatController@markAllAsRead');
     Route::get('chat/broadcast-channel/my','Chat\ChatController@getMyBroadcastChannel');
+
     Route::get('user/profile','User\UserController@profile');
     Route::get('user/logout','User\UserController@logout');
 
