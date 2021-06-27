@@ -5,51 +5,27 @@ namespace App\Http\Controllers\Chat;
 use App\Http\Controllers\Controller;
 use App\Traits\UserStatusTraits;
 use Illuminate\Http\Request;
-use App\Events\MessageEvent;
 use Illuminate\Support\Str;
 use App\Models\BroadcastChannel;
 use App\Models\UserStatus;
 use App\Models\Message;
 use Illuminate\Support\Facades\DB;
-
+use App\Services\BroadcastService;
 class ChatController extends Controller
 {
     use UserStatusTraits;
 
-    private function createOrSelectBroadcastChannel($userId)
-    {
-        if(BroadcastChannel::where('user_id',$userId)->count()==1)
-        {
-            return BroadcastChannel::where('user_id',$userId)->get();
-        }
-        $channel=BroadcastChannel::create([
-            'user_id'=>$userId,
-            'channel_name'=>$userId.'@'.Str::random(6)
-        ]);
-        return $channel;
-    }
+    private $broadcastService;
 
-    private function sendMessageNotification($toUserId,$message)
+    public function __construct(BroadcastService $broadcastService)
     {
-        $sendChannel=BroadcastChannel::where('user_id',$toUserId)
-                                     ->count();
-        $userStatus=$this->isUserStatusPresent($toUserId);                            
-        
-        if($sendChannel==1 && $userStatus==1)
-        {
-            $sendChannel=BroadcastChannel::where('user_id',$toUserId)
-                                         ->get()->pluck('channel_name');
-            if($this->isUserOnline($toUserId))
-            {
-                event(new MessageEvent($message,$sendChannel[0]));
-            }
-                
-        }      
+        $this->broadcastService=$broadcastService;
     }
+    
 
     public function getMyBroadcastChannel()
     {
-        $channel=$this->createOrSelectBroadcastChannel(auth()->user()->id);
+        $channel=$this->broadcastService->createOrSelectBroadcastChannel(auth()->user()->id);
         return response()->json([
             "status"=>1,
             "channel"=>$channel,
@@ -69,7 +45,7 @@ class ChatController extends Controller
                 'message'=>$request->message,
             ]);                       
 
-            $this->sendMessageNotification($request->toUser,$message);
+            $this->broadcastService->sendMessageNotification($request->toUser,$message);
 
             return response()->json([
                 "status"=>1,

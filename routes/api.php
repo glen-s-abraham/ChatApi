@@ -16,15 +16,20 @@ use Illuminate\Support\Facades\Route;
 Route::post('user/register','User\UserController@register');
 Route::post('user/login','User\UserController@login');
 
-Route::group(['middleware'=>['auth:sanctum']],function(){
-    Route::post('chat/message','Chat\ChatController@sendMessage');
-    Route::get('chat/message/{userId}/get','Chat\ChatController@getConversation');
-    Route::get('chat/message/unread/count','Chat\ChatController@getUnreadMessageCount');
-    Route::put('chat/message/{messageId}/markAsRead','Chat\ChatController@markAsRead');
-    Route::put('chat/message/{userId}/markAllAsRead','Chat\ChatController@markAllAsRead');
-    Route::get('chat/broadcast-channel/my','Chat\ChatController@getMyBroadcastChannel');
+Route::group(['middleware'=>['auth:sanctum'],'prefix'=>'chat'],function(){
+    Route::post('/message','Chat\ChatController@sendMessage');
+    Route::get('/message/{userId}/get','Chat\ChatController@getConversation');
+    Route::get('/message/unread/count','Chat\ChatController@getUnreadMessageCount');
+    Route::put('/message/{messageId}/markAsRead','Chat\ChatController@markAsRead');
+    Route::put('/message/{userId}/markAllAsRead','Chat\ChatController@markAllAsRead');
+    Route::get('/my-channel','Chat\ChatController@getMyBroadcastChannel');
+});
 
-    Route::get('user/profile','User\UserController@profile');
-    Route::get('user/logout','User\UserController@logout');
+Route::group(['middleware'=>['auth:sanctum'],'prefix'=>'user'],function(){
+    Route::get('/profile','User\UserController@profile');
+    Route::put('/status/online','Chat\UserStatusController@setMyStatusOnline');
+    Route::put('/status/offline','Chat\UserStatusController@setMyStatusOffline');
+    Route::get('/status/{userId}','Chat\UserStatusController@getUserStatus');
+    Route::get('/logout','User\UserController@logout');
 
 });
