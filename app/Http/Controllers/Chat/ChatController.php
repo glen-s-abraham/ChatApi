@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use App\Models\BroadcastChannel;
 use App\Models\UserStatus;
 use App\Models\Message;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Services\BroadcastService;
 class ChatController extends Controller
@@ -66,6 +67,22 @@ class ChatController extends Controller
 
         return response()->json([$message]);                    
     }
+
+    public function getMyConversationList()
+    {
+        $messages=Message::where('from_user_id',auth()->user()->id)
+                          ->orWhere('to_user_id',auth()->user()->id)
+                          ->orderBy('created_at','desc')
+                          ->get();
+
+        $toIds=$messages->unique('to_user_id')->pluck('to_user_id')->toArray();
+        $fromIds=$messages->unique('from_user_id')->pluck('from_user_id')->toArray();
+        $list=array_unique(array_merge($toIds,$fromIds),SORT_REGULAR);
+        $list=User::find($list)->pluck('name','id');
+
+
+        return response()->json(["myContacts"=>$list]);
+    } 
 
     public function getUnreadMessageCount()
     {

@@ -23,6 +23,7 @@ Route::group(['middleware'=>['auth:sanctum'],'prefix'=>'chat'],function(){
     Route::put('/message/{messageId}/markAsRead','Chat\ChatController@markAsRead');
     Route::put('/message/{userId}/markAllAsRead','Chat\ChatController@markAllAsRead');
     Route::get('/my-channel','Chat\ChatController@getMyBroadcastChannel');
+    Route::get('/my-conversationList','Chat\ChatController@getMyConversationList');
 });
 
 Route::group(['middleware'=>['auth:sanctum'],'prefix'=>'user'],function(){
