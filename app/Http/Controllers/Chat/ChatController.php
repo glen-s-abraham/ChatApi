@@ -12,6 +12,7 @@ use App\Models\Message;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Services\BroadcastService;
+
 class ChatController extends Controller
 {
     use UserStatusTraits;
@@ -80,7 +81,6 @@ class ChatController extends Controller
         $list=array_unique(array_merge($toIds,$fromIds),SORT_REGULAR);
         $list=User::find($list)->pluck('name','id');
 
-
         return response()->json(["myContacts"=>$list]);
     } 
 
@@ -94,8 +94,7 @@ class ChatController extends Controller
                      ->get();
 
        return response()->json(["Unread messages"=>$messages]);
-        
-        
+  
     }
 
     public function markAsread($messageId)
@@ -114,8 +113,7 @@ class ChatController extends Controller
         $message=Message::Where('from_user_id',$fromUserId)
                         ->where('to_user_id',auth()->user()->id)
                         ->where('read',0)
-                        ->update(['read'=>1]);               
-        
+                        ->update(['read'=>1]);                    
         
     }
 }

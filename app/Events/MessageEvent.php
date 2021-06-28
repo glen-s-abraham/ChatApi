@@ -6,17 +6,17 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Message;
 
-class MessageEvent implements ShouldBroadcast
+class MessageEvent implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $message;
-    public $sendChannel;
+    private $message;
+    private $sendChannel;
     /**
      * Create a new event instance.
      *
@@ -27,6 +27,16 @@ class MessageEvent implements ShouldBroadcast
         $this->message=$message;
         $this->sendChannel=$sendChannel;
         
+    }
+
+    public function broadcastWith()
+    {
+        return [
+            'id'=>$this->message->id,
+            'message'=>$this->message->message,
+            'from_user_id'=>$this->message->from_user_id,
+            'created_at'=>$this->message->created_at
+        ];
     }
 
     /**

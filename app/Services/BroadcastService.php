@@ -36,7 +36,9 @@ class BroadcastService{
                                          ->get()->pluck('channel_name');
             if($this->isUserOnline($toUserId))
             {
-                event(new MessageEvent($message,$sendChannel[0]));
+                //event(new MessageEvent($message,$sendChannel[0]));
+                MessageEvent::dispatch($message,$sendChannel[0]);
+
             }
                 
         }      
