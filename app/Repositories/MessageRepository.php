@@ -63,9 +63,11 @@ class MessageRepository implements MessageRepositoryInterface
 
 	public function markAllMassagesAsRead($fromUserId,$toUserId)
 	{
-		 Message::Where('from_user_id',$fromUserId)
-                ->where('to_user_id',$toUserId)
-                ->where('read',0)
-                ->update(['read'=>1]);
+		Message::Where('from_user_id',$fromUserId)
+               ->where('to_user_id',$toUserId)
+               ->where('read',0)
+               ->update(['read'=>1]);
+        return 1;       
+
 	}
 }

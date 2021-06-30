@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\BroadcastChannel;
 use App\Models\UserStatus;
-use App\Models\Message;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Services\BroadcastService;
@@ -21,7 +20,7 @@ class ChatController extends Controller
 
     private $broadcastService;
     private $messageRepositoryInterface;
-    
+
     public function __construct(BroadcastService $broadcastService,MessageRepositoryInterface $messageRepositoryInterface)
     {
         $this->broadcastService=$broadcastService;
@@ -44,7 +43,7 @@ class ChatController extends Controller
             $data=$request->only(['message','to_user_id']);
             $data['from_user_id']=auth()->user()->id;
             $message=$this->messageRepositoryInterface->storeMessage($data);                      
-            $this->broadcastService->sendMessageNotification($request->toUser,$message);
+            $this->broadcastService->sendMessageNotification($request->to_user_id,$message);
 
             return response()->json([
                 $message,

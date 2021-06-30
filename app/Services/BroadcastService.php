@@ -6,7 +6,7 @@ namespace App\Services;
 use App\Models\BroadcastChannel;
 use App\Traits\UserStatusTraits;
 use App\Events\MessageEvent;
-
+use App\Jobs\SendMessageNotificationMail;
 class BroadcastService{
 
 	use UserStatusTraits;
@@ -28,6 +28,7 @@ class BroadcastService{
     {
         $sendChannel=BroadcastChannel::where('user_id',$toUserId)
                                      ->count();
+                                     
         $userStatus=$this->isUserStatusPresent($toUserId);                            
         
         if($sendChannel==1 && $userStatus==1)
@@ -36,10 +37,18 @@ class BroadcastService{
                                          ->get()->pluck('channel_name');
             if($this->isUserOnline($toUserId))
             {
-                //event(new MessageEvent($message,$sendChannel[0]));
-                MessageEvent::dispatch($message,$sendChannel[0]);
+                event(new MessageEvent($message,$sendChannel[0]));
+                //MessageEvent::dispatch($message,$sendChannel[0]);
 
             }
+            else
+            {
+                SendMessageNotificationMail::dispatch($toUserId,$message)
+                                            ->delay(now()->addSecondss(10));
+
+            }
+
+            
                 
         }      
     }
