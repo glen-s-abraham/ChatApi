@@ -4,6 +4,7 @@
 namespace App\Services;
 
 use App\Models\BroadcastChannel;
+use App\Models\User;
 use App\Traits\UserStatusTraits;
 use App\Events\MessageEvent;
 use App\Jobs\SendMessageNotificationMail;
@@ -11,45 +12,30 @@ class BroadcastService{
 
 	use UserStatusTraits;
 
-	public function createOrSelectBroadcastChannel($userId)
-    {
-        if(BroadcastChannel::where('user_id',$userId)->count()==1)
+    public function sendMessageNotification(
+    $sendChannel,
+    $message,
+    $toUserMail,
+    $fromUserName
+    )
+    {                 
+        if($this->isUserStatusPresent($message->to_user_id)==1)
         {
-            return BroadcastChannel::where('user_id',$userId)->get();
-        }
-        $channel=BroadcastChannel::create([
-            'user_id'=>$userId,
-            'channel_name'=>$userId.'@'.Str::random(6)
-        ]);
-        return $channel;
-    }
-
-    public function sendMessageNotification($toUserId,$message)
-    {
-        $sendChannel=BroadcastChannel::where('user_id',$toUserId)
-                                     ->count();
-                                     
-        $userStatus=$this->isUserStatusPresent($toUserId);                            
-        
-        if($sendChannel==1 && $userStatus==1)
-        {
-            $sendChannel=BroadcastChannel::where('user_id',$toUserId)
-                                         ->get()->pluck('channel_name');
-            if($this->isUserOnline($toUserId))
+            error_log($this->isUserOnline($message->to_user_id));
+            if($this->isUserOnline($message->to_user_id)==1)
             {
-                event(new MessageEvent($message,$sendChannel[0]));
+                event(new MessageEvent($message,$sendChannel));
                 //MessageEvent::dispatch($message,$sendChannel[0]);
-
             }
             else
             {
-                SendMessageNotificationMail::dispatch($toUserId,$message)
-                                            ->delay(now()->addSecondss(10));
-
-            }
-
-            
-                
+                SendMessageNotificationMail::dispatch($toUserMail,
+                    [
+                        'fromUser'=>$fromUserName,
+                        'time'=>$message->created_at,
+                    ])
+                    ->delay(now()->addSecondss(10));
+            }                
         }      
     }
 

@@ -6,20 +6,20 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use App\Models\User;
+
 class MessageRecievedMail extends Mailable
 {
     use Queueable, SerializesModels;
-    private $user;
+    private $message;
     
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct($user)
+    public function __construct($message)
     {
-        $this->user=$user;
+        $this->message=$message;
        
 
     }
@@ -31,7 +31,11 @@ class MessageRecievedMail extends Mailable
      */
     public function build()
     {
+       
          return $this->view('email.messageRecieved')
-                     ->with(['user'=>$this->user->name]);
+                     ->with([
+                                'fromuser'=>$this->message['fromUser'],
+                                'time'=>$this->message['time']
+                            ]);
     }
 }

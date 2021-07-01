@@ -32,8 +32,6 @@ trait UserStatusTraits{
                                          ->count();
 	}
 
-	
-
 	public function isUserOnline($userId)
 	{
 		return UserStatus::where('user_id',$userId)->firstOrFail()->online;

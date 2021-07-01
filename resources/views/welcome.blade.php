@@ -14,7 +14,7 @@
       cluster: 'ap2'
     });
 
-    var channel = pusher.subscribe('11@wa3vS9');
+    var channel = pusher.subscribe('3@Jl5oAA');
     channel.bind('messageEvent', function(data) {
       alert(JSON.stringify(data));
     });

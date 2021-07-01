@@ -1,1 +1,1 @@
-<div>You have a new message from user{{$user}}</div>
+<div>You have a new message from user{{$fromuser}} at {{$time}}</div>

@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Services\BroadcastService;
 use App\Repositories\Interfaces\MessageRepositoryInterface;
+use App\Repositories\Interfaces\BroadcastRepositoryInterface;
 use App\Http\Requests\MessageStoreRequest;
 
 class ChatController extends Controller
@@ -20,18 +21,22 @@ class ChatController extends Controller
 
     private $broadcastService;
     private $messageRepositoryInterface;
+    private $broadcastRepositoryInterface;
 
-    public function __construct(BroadcastService $broadcastService,MessageRepositoryInterface $messageRepositoryInterface)
+    public function __construct(BroadcastService $broadcastService,MessageRepositoryInterface $messageRepositoryInterface,
+        BroadcastRepositoryInterface $broadcastRepositoryInterface
+    )
     {
         $this->broadcastService=$broadcastService;
         $this->messageRepositoryInterface=$messageRepositoryInterface;
+        $this->broadcastRepositoryInterface=$broadcastRepositoryInterface;
     }
     
 
     public function getMyBroadcastChannel()
     {
         return response()->json([
-            $this->broadcastService
+            $this->broadcastRepositoryInterface
                   ->createOrSelectBroadcastChannel(auth()->user()->id)
         ]);
     }
@@ -42,9 +47,18 @@ class ChatController extends Controller
         
             $data=$request->only(['message','to_user_id']);
             $data['from_user_id']=auth()->user()->id;
-            $message=$this->messageRepositoryInterface->storeMessage($data);                      
-            $this->broadcastService->sendMessageNotification($request->to_user_id,$message);
-
+            $message=$this->messageRepositoryInterface->storeMessage($data);
+            $sendChannel=$this->broadcastRepositoryInterface
+                              ->createOrSelectBroadcastChannel($request->to_user_id)
+                              ->pluck('channel_name')[0];
+            $toUserMail=User::findOrFail($request->to_user_id)
+                            ->pluck('email')[0];                             
+            $this->broadcastService->sendMessageNotification(
+                $sendChannel,
+                $message,
+                $toUserMail,
+                auth()->user()->name,
+            );
             return response()->json([
                 $message,
             ]);                               

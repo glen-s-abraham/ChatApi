@@ -10,7 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Mail\MessageRecievedMail;
 use Illuminate\Support\Facades\Mail;
-use App\Models\User;
+
 
 class SendMessageNotificationMail implements ShouldQueue
 {
@@ -21,11 +21,11 @@ class SendMessageNotificationMail implements ShouldQueue
      *
      * @return void
      */
-    private $toUserId;
+    private $userEmail;
     private $message;
-    public function __construct($toUserId,$message)
+    public function __construct($userEmail,$message)
     {
-        $this->toUserId=$toUserId;
+        $this->userEmail=$userEmail;
         $this->message=$message;
     }
 
@@ -36,10 +36,9 @@ class SendMessageNotificationMail implements ShouldQueue
      */
     public function handle()
     {
-        //need to refactor
-        Mail::to(User::findOrFail($this->toUserId))
-                   ->send(new MessageRecievedMail(
-                    User::findOrFail($this->message->from_user_id)                
-        ));
+        
+        Mail::to($this->userEmail)
+                   ->send(new MessageRecievedMail($this->message));
+                                    
     }
 }
