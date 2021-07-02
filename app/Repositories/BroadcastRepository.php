@@ -7,12 +7,10 @@ use App\Repositories\Interfaces\BroadcastRepositoryInterface;
 
 class BroadcastRepository implements BroadcastRepositoryInterface
 {
-	public function createOrSelectBroadcastChannel($userId)
+
+	public function createBroadcastChannel($userId)
     {
-        if(BroadcastChannel::where('user_id',$userId)->count()==1)
-        {
-            return BroadcastChannel::where('user_id',$userId)->get();
-        }
+        
         $channel=BroadcastChannel::create([
             'user_id'=>$userId,
             'channel_name'=>$userId.'@'.Str::random(6)
@@ -20,7 +18,7 @@ class BroadcastRepository implements BroadcastRepositoryInterface
         return $channel;
     }
 
-    public function getMyBroadcastChannelName($userId)
+    public function getBroadcastChannelName($userId)
     {
     	return BroadcastChannel::where('user_id',$userId)
                                ->get()->pluck('channel_name');

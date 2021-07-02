@@ -13,23 +13,51 @@ use Illuminate\Support\Facades\DB;
 use App\Services\BroadcastService;
 use App\Repositories\Interfaces\MessageRepositoryInterface;
 use App\Repositories\Interfaces\BroadcastRepositoryInterface;
+use App\Repositories\Interfaces\UserStatusRepositoryInterface;
 use App\Http\Requests\MessageStoreRequest;
 
 class ChatController extends Controller
 {
-    use UserStatusTraits;
+    
 
     private $broadcastService;
     private $messageRepositoryInterface;
     private $broadcastRepositoryInterface;
+    private $userStatusRepositoryInterface;
+
+    
 
     public function __construct(BroadcastService $broadcastService,MessageRepositoryInterface $messageRepositoryInterface,
-        BroadcastRepositoryInterface $broadcastRepositoryInterface
+        BroadcastRepositoryInterface $broadcastRepositoryInterface,
+        UserStatusRepositoryInterface $userStatusRepositoryInterface,
     )
     {
         $this->broadcastService=$broadcastService;
         $this->messageRepositoryInterface=$messageRepositoryInterface;
         $this->broadcastRepositoryInterface=$broadcastRepositoryInterface;
+        $this->userStatusRepositoryInterface=$userStatusRepositoryInterface;
+
+    }
+
+    private function notifyUser($userId,$message)
+    {
+        if($this->userStatusRepositoryInterface
+                    ->getUserStatus($userId)
+            )
+            {
+                $sendChannel=$this->broadcastRepositoryInterface
+                                  ->getBroadcastChannelName($userId)[0];
+
+                $this->broadcastService->pushMessage($sendChannel,$message);            
+            }
+            else
+            {
+                $toUserMail=User::findOrFail($userId)->email;
+
+                $this->broadcastService->sendEmailNotification(
+                    $toUserMail,auth()->user()->name,$message
+                );
+            }
     }
     
 
@@ -37,7 +65,7 @@ class ChatController extends Controller
     {
         return response()->json([
             $this->broadcastRepositoryInterface
-                  ->createOrSelectBroadcastChannel(auth()->user()->id)
+                  ->getBroadcastChannelName(auth()->user()->id)[0]
         ]);
     }
 
@@ -48,17 +76,7 @@ class ChatController extends Controller
             $data=$request->only(['message','to_user_id']);
             $data['from_user_id']=auth()->user()->id;
             $message=$this->messageRepositoryInterface->storeMessage($data);
-            $sendChannel=$this->broadcastRepositoryInterface
-                              ->createOrSelectBroadcastChannel($request->to_user_id)
-                              ->pluck('channel_name')[0];
-            $toUserMail=User::findOrFail($request->to_user_id)
-                            ->pluck('email')[0];                             
-            $this->broadcastService->sendMessageNotification(
-                $sendChannel,
-                $message,
-                $toUserMail,
-                auth()->user()->name,
-            );
+            $this->notifyUser($request->to_user_id,$message);
             return response()->json([
                 $message,
             ]);                               

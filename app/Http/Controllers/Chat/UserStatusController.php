@@ -5,28 +5,37 @@ namespace App\Http\Controllers\chat;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\UserStatus;
-use App\Traits\UserStatusTraits;
+use App\Repositories\Interfaces\UserStatusRepositoryInterface;
 
 class UserStatusController extends Controller
 {
-    use UserStatusTraits;
+    private $userStatusRepositoryInterface;
+
+    public function __construct(
+        UserStatusRepositoryInterface $userStatusRepositoryInterface
+    )
+    {
+        $this->userStatusRepositoryInterface=$userStatusRepositoryInterface;
+    }
 
     public function setMyStatusOnline()
     {
-        $this->setStatusToOnline(auth()->user()->id);
+        $this->userStatusRepositoryInterface
+             ->setStatusToOnline(auth()->user()->id);
     }
 
     public function setMyStatusOffline()
     {
-        $this->setStatusToOffline(auth()->user()->id);
+         $this->userStatusRepositoryInterface
+              ->setStatusToOffline(auth()->user()->id);
     }
 
     public function getUserStatus($userId)
     {
-        $status=$this->isUserOnline($userId)?'online':'offline';
+        $status=$this->userStatusRepositoryInterface
+                     ->getUserStatus($userId)?'online':'offline';
         return response()->json([
-                "status"=>1,
-                "status"=>$status,
+               $status
         ]);
     }
 }

@@ -7,28 +7,36 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Traits\UserStatusTraits;
+use App\Repositories\Interfaces\BroadcastRepositoryInterface;
+use App\Repositories\Interfaces\UserStatusRepositoryInterface;
+use App\Http\Requests\UserStoreRequest;
 class UserController extends Controller
 {
     use UserStatusTraits;
 
-    public function register(Request $request)
-    {
-        $request->validate([
-            'name'=>'required',
-            'email'=>'required|email',
-            'password'=>'required|confirmed',
-        ]);
+    private $broadcastRepositoryInterface;
+    private $userStatusRepositoryInterface;
 
+    public function __construct(
+        BroadcastRepositoryInterface $broadcastRepositoryInterface,
+        UserStatusRepositoryInterface $userStatusRepositoryInterface
+    )
+    {
+        $this->broadcastRepositoryInterface=$broadcastRepositoryInterface;
+        $this->userStatusRepositoryInterface=$userStatusRepositoryInterface;
+    }
+
+    public function register(UserStoreRequest $request)
+    {
         $user=new User();
         $user->fill($request->only(['name','email']));
         $user['password']=Hash::make($request->password);
         $user->save();
 
-        return response()->json([
-            "status"=>1,
-            "message"=>"registered",
-            "user"=>$user
-        ]);
+        $this->broadcastRepositoryInterface->createBroadcastChannel($user->id);
+        $this->userStatusRepositoryInterface->setStatusToOffline($user->id);
+
+        return response()->json([$user]);
     }
 
     public function login(Request $request)

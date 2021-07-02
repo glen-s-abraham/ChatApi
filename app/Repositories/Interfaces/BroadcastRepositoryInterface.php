@@ -4,6 +4,7 @@ namespace App\Repositories\Interfaces;
 
 interface BroadcastRepositoryInterface
 {
-	public function createOrSelectBroadcastChannel($userId);
+	public function createBroadcastChannel($userId);
+	public function getBroadcastChannelName($userId);
 	
 }
